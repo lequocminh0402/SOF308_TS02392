@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="EN">
+<head>
+    <title>Title</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body{
+            background: #0f0f0f;
+        }
+        /* Tinh chỉnh chung */
+        .admin-card {
+            border: 2.1px solid #000;
+            border-radius:  0px 20px 20px 20px;
+            padding: 2rem;
+            background: #fff;
+        }
+
+        /* Tùy chỉnh Tab */
+        #videoTab .nav-link {
+            color: #ffffff;
+            border-radius: 10px 10px 0 0;
+            font-weight: 600;
+            border: none;
+            padding: 10px 20px;
+        }
+
+        #videoTab .nav-link.active {
+            background-color: #aaaaaa !important;
+            color: #222222 !important;
+        }
+
+        /* Nút bấm kiểu Capsule */
+        .btn-capsule {
+            border-radius: 50px;
+            padding: 6px 25px;
+            transition: all 0.3s;
+            background-color: #222222;
+            border: 1px solid #ddd;
+        }
+
+        .btn-capsule:hover {
+            background-color: #000;
+            color: #fff;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+<div class="container mt-4 ">
+    <ul class="nav nav-tabs mt-4 border-0" id="videoTab" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#editTab">Videos Editing</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#listTab">Videos List</button>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        <div class="tab-pane fade show active border" id="editTab">
+            <div class="admin-card">
+                <form action="/admin/video" method="post">
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <input type="file" id="fileInput" accept="image/*" class="d-none">
+                            <div id="posterArea" class="border border-2 border-dashed rounded d-flex align-items-center justify-content-center text-muted"
+                                 style="width: 400px; height: 300px; cursor: pointer;">Poster
+                            </div>
+                        </div>
+
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Video Title</label>
+                                <input class="form-control shadow-sm" name="title" value="${form.title}">
+                            </div>
+                            <div class="mb-2">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="active" value="true" ${form.active ? 'checked' : ''}>
+                                    <label class="form-check-label">Active</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="active" value="false" ${!form.active ? 'checked' : ''}>
+                                    <label class="form-check-label">Inactive</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Description</label>
+                            <textarea class="form-control shadow-sm" name="description" rows="3">${form.description}</textarea>
+                        </div>
+
+                        <div class="col-12 text-center mt-4">
+                            <button formaction="video/create" class="btn btn-capsule">Create</button>
+                            <button formaction="video/update" class="btn btn-capsule">Update</button>
+                            <button formaction="video/delete" class="btn btn-capsule">Delete</button>
+                            <button type="reset" class="btn btn-capsule">Reset</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="listTab">
+            <div class="admin-card">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                    <tr>
+                        <th>Youtube Id</th>
+                        <th>Video Title</th>
+                        <th>Views</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <c:forEach var="v" items="${videos}">
+                        <tr>
+                            <td class="fw-bold text-primary">${v.id}</td>
+                            <td>${v.title}</td>
+                            <td>${v.views}</td>
+                            <td>
+                                    <span class="badge ${v.active ? 'bg-success' : 'bg-secondary'}">
+                                            ${v.active ? 'Active' : 'Inactive'}
+                                    </span>
+                            </td>
+                            <td>
+                                <a href="video/edit?id=${v.id}" class="btn btn-sm btn-outline-dark rounded-pill px-3">Edit</a>
+                            </td>
+                        </tr>
+                    </c:forEach>
+                    </tbody>
+                </table>
+
+                <div class="d-flex justify-content-center gap-2 mt-4">
+                    <button class="btn btn-capsule px-3">|&lt;</button>
+                    <button class="btn btn-capsule px-3">&lt;&lt;</button>
+                    <button class="btn btn-capsule px-3">&gt;&gt;</button>
+                    <button class="btn btn-capsule px-3">&gt;|</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Lấy các phần tử từ DOM
+    const fileInput = document.getElementById('fileInput');
+    const posterArea = document.getElementById('posterArea');
+
+    // Khi click vào khu vực Poster, kích hoạt click của input file
+    posterArea.addEventListener('click', function() {
+        fileInput.click();
+    });
+
+    // Khi người dùng chọn file ảnh, sự kiện 'change' sẽ được kích hoạt
+    fileInput.addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                // Sử dụng thuộc tính style để hiển thị ảnh
+                posterArea.style.backgroundImage = `url('${e.target.result}')`;
+                posterArea.style.backgroundSize = 'cover';
+                posterArea.style.backgroundPosition = 'center';
+                posterArea.textContent = ''; // Xóa chữ "Poster"
+                posterArea.classList.remove('text-muted'); // Xóa màu chữ mờ
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+</script>
+</body>
+</html>
